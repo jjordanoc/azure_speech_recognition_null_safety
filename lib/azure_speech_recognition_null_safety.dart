@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui';
 
 import 'package:flutter/services.dart';
 
@@ -18,17 +17,17 @@ class AzureSpeechRecognition {
     _channel.setMethodCallHandler(_platformCallHandler);
   }
 
-  static String _subKey;
-  static String _region;
+  static String? _subKey;
+  static String? _region;
   static String _lang = "en-EN";
-  static String _languageUnderstandingSubscriptionKey;
-  static String _languageUnderstandingServiceRegion;
-  static String _languageUnderstandingAppId;
+  static String? _languageUnderstandingSubscriptionKey;
+  static String? _languageUnderstandingServiceRegion;
+  static String? _languageUnderstandingAppId;
 
   /// default intitializer for almost every type except for the intent recognizer.
   /// Default language -> English
   AzureSpeechRecognition.initialize(String subKey, String region,
-      {String lang}) {
+      {String? lang}) {
     _subKey = subKey;
     _region = region;
     if (lang != null) _lang = lang;
@@ -45,32 +44,32 @@ class AzureSpeechRecognition {
     if (lang != null) _lang = lang;
   }
 
-  StringResultHandler exceptionHandler;
-  StringResultHandler recognitionResultHandler;
-  StringResultHandler finalTranscriptionHandler;
-  VoidCallback recognitionStartedHandler;
-  VoidCallback startRecognitionHandler;
-  VoidCallback recognitionStoppedHandler;
+  StringResultHandler? exceptionHandler;
+  StringResultHandler? recognitionResultHandler;
+  StringResultHandler? finalTranscriptionHandler;
+  VoidCallback? recognitionStartedHandler;
+  VoidCallback? startRecognitionHandler;
+  VoidCallback? recognitionStoppedHandler;
 
   Future _platformCallHandler(MethodCall call) async {
     switch (call.method) {
       case "speech.onRecognitionStarted":
-        recognitionStartedHandler();
+        recognitionStartedHandler!();
         break;
       case "speech.onSpeech":
-        recognitionResultHandler(call.arguments);
+        recognitionResultHandler!(call.arguments);
         break;
       case "speech.onFinalResponse":
-        finalTranscriptionHandler(call.arguments);
+        finalTranscriptionHandler!(call.arguments);
         break;
       case "speech.onStartAvailable":
-        startRecognitionHandler();
+        startRecognitionHandler!();
         break;
       case "speech.onRecognitionStopped":
-        recognitionStoppedHandler();
+        recognitionStoppedHandler!();
         break;
       case "speech.onException":
-        exceptionHandler(call.arguments);
+        exceptionHandler!(call.arguments);
         break;
       default:
         print("Error: method called not found");

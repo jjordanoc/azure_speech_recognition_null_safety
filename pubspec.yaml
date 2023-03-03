@@ -1,11 +1,11 @@
-name: azure_speech_recognition
-description: An implementation of Azure Speech Recognition Service for Flutter.
-version: 0.8.2
-homepage: https://github.com/cristianbregant/azure_speech_recognition
+name: azure_speech_recognition_null_safety
+description: azure_speech_recognition with sound null safety.
+version: 0.8.3
+homepage: https://github.com/jjordanoc/azure_speech_recognition_null_safety
 
 environment:
-  sdk: ">=2.1.0 <3.0.0"
-  flutter: ">=1.10.0 <2.0.0"
+  sdk: '>=2.12.0 <3.0.0'
+  flutter: ">=3.0.0"
  
 
 dependencies:

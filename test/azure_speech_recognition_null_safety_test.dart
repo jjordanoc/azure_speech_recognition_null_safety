@@ -1,6 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:azure_speech_recognition/azure_speech_recognition.dart';
+import 'package:azure_speech_recognition_null_safety/azure_speech_recognition_null_safety.dart';
 
 void main() {
   const MethodChannel channel = MethodChannel('azure_speech_recognition');
