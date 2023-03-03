@@ -8,15 +8,9 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
 import com.microsoft.cognitiveservices.speech.audio.AudioConfig;
-import com.microsoft.cognitiveservices.speech.ResultReason;
 import com.microsoft.cognitiveservices.speech.intent.LanguageUnderstandingModel;
-import com.microsoft.cognitiveservices.speech.SpeechConfig;
 import com.microsoft.cognitiveservices.speech.intent.IntentRecognitionResult;
 import com.microsoft.cognitiveservices.speech.intent.IntentRecognizer;
-import com.microsoft.cognitiveservices.speech.SpeechRecognitionResult;
-import com.microsoft.cognitiveservices.speech.SpeechRecognizer;
-import com.microsoft.cognitiveservices.speech.CancellationDetails;
-import com.microsoft.cognitiveservices.speech.KeywordRecognitionModel;
 import com.bregant.azure_speech_recognition.MicrophoneStream;
 import android.app.Activity;
 
@@ -33,6 +27,7 @@ import java.io.InputStream;
 import java.net.URI;
 import android.util.Log;
 import android.text.TextUtils;
+import com.microsoft.cognitiveservices.speech.*
 
 import java.util.concurrent.Semaphore 
 
@@ -182,6 +177,7 @@ public class AzureSpeechRecognitionPlugin(): FlutterPlugin,Activity(),MethodCall
       assert(config != null);
 
       config.speechRecognitionLanguage = lang;
+      config.setProperty(PropertyId.Speech_SegmentationSilenceTimeoutMs, "3000");
 
       var reco : SpeechRecognizer = SpeechRecognizer(config,audioInput);
 
@@ -192,7 +188,6 @@ public class AzureSpeechRecognitionPlugin(): FlutterPlugin,Activity(),MethodCall
       assert(task != null);
 
       invokeMethod("speech.onRecognitionStarted",null);
-
 
       setOnTaskCompletedListener(task, { result ->
         val s = result.getText()
@@ -212,8 +207,6 @@ public class AzureSpeechRecognitionPlugin(): FlutterPlugin,Activity(),MethodCall
 
     }
   }
-
-
 
   // Mic Streaming, it need the additional method implementend to get the data from the async task
   fun micStreamRecognition(speechSubscriptionKey:String,serviceRegion:String,lang:String){
