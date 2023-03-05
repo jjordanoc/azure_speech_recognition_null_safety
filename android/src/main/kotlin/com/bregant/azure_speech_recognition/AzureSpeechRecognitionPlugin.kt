@@ -99,8 +99,9 @@ public class AzureSpeechRecognitionPlugin(): FlutterPlugin,Activity(),MethodCall
       var speechSubscriptionKey : String = ""+call.argument("subscriptionKey");
       var serviceRegion : String= ""+call.argument("region");
       var lang : String = ""+call.argument("language");
+      var timeoutMs : String = ""+call.argument("timeout");
 
-      simpleSpeechRecognition(speechSubscriptionKey,serviceRegion,lang);
+      simpleSpeechRecognition(speechSubscriptionKey,serviceRegion,lang,timeoutMs);
       result.success(true);
 
     }else if(call.method == "micStream"){
@@ -165,7 +166,7 @@ public class AzureSpeechRecognitionPlugin(): FlutterPlugin,Activity(),MethodCall
     azureChannel.setMethodCallHandler(null)
   }
 
-  fun simpleSpeechRecognition(speechSubscriptionKey:String,serviceRegion:String,lang:String) {
+  fun simpleSpeechRecognition(speechSubscriptionKey:String,serviceRegion:String,lang:String,timeoutMs:String) {
     val logTag : String = "simpleVoice";
 
 
@@ -177,7 +178,7 @@ public class AzureSpeechRecognitionPlugin(): FlutterPlugin,Activity(),MethodCall
       assert(config != null);
 
       config.speechRecognitionLanguage = lang;
-      config.setProperty(PropertyId.Speech_SegmentationSilenceTimeoutMs, "3000");
+      config.setProperty(PropertyId.Speech_SegmentationSilenceTimeoutMs, timeoutMs);
 
       var reco : SpeechRecognizer = SpeechRecognizer(config,audioInput);
 

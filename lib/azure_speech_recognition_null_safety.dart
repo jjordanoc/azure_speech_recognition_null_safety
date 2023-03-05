@@ -20,6 +20,8 @@ class AzureSpeechRecognition {
   static String? _subKey;
   static String? _region;
   static String _lang = "en-EN";
+  static String _timeout = "1000";
+
   static String? _languageUnderstandingSubscriptionKey;
   static String? _languageUnderstandingServiceRegion;
   static String? _languageUnderstandingAppId;
@@ -27,10 +29,17 @@ class AzureSpeechRecognition {
   /// default intitializer for almost every type except for the intent recognizer.
   /// Default language -> English
   AzureSpeechRecognition.initialize(String subKey, String region,
-      {String? lang}) {
+      {String? lang, String? timeout}) {
     _subKey = subKey;
     _region = region;
     if (lang != null) _lang = lang;
+    if (timeout != null) {
+      if (int.parse(timeout) >= 100 && int.parse(timeout) <= 5000) {
+        _timeout = timeout;
+      } else {
+        throw "Segmentation silence timeout must be an integer in the range 100 to 5000. See https://learn.microsoft.com/en-us/azure/cognitive-services/speech-service/how-to-recognize-speech?pivots=programming-language-csharp#change-how-silence-is-handled for more information.";
+      }
+    }
   }
 
   /// initializer for intent purpose
@@ -105,8 +114,12 @@ class AzureSpeechRecognition {
 
   static simpleVoiceRecognition() {
     if ((_subKey != null && _region != null)) {
-      _channel.invokeMethod('simpleVoice',
-          {'language': _lang, 'subscriptionKey': _subKey, 'region': _region});
+      _channel.invokeMethod('simpleVoice', {
+        'language': _lang,
+        'subscriptionKey': _subKey,
+        'region': _region,
+        'timeout': _timeout
+      });
     } else {
       throw "Error: SpeechRecognitionParameters not initialized correctly";
     }

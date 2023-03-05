@@ -1,5 +1,6 @@
 ## 0.8.3
 - Added null safety.
+- Added (optional) segmentation silence timeout for simple voice recognition.
 
 ## 0.8.2
 

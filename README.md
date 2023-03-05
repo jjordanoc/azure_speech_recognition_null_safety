@@ -1,12 +1,12 @@
 # AzureSpeechRecognition
 
-Demonstrates how to use the AzureSpeechRecognition plugin.
+See original project by cristianbregant: https://github.com/cristianbregant/azure_speech_recognition
 
 ## Getting Started
 
 This project is a starting point for using the Azure Speech Recognition Services.
 
-To use this plugin you must have already create an account on the cognitive service page.
+To use this plugin you must have already created an account on the cognitive service page.
 
 ## Installation
 
@@ -19,7 +19,7 @@ azure_speech_recognition: ^0.8.3
 ## Usage
 
 ```dart
-import 'package:azure_speech_recognition/azure_speech_recognition.dart';
+import 'package:azure_speech_recognition_null_safety/azure_speech_recognition_null_safety.dart';
 ```
 
 ## Initialize
@@ -27,8 +27,9 @@ There are 2 type of initializer:
 ### Simple initializer
 It should be used in any case other than the IntentRecognition.
 The language default setting is "en-EN" but you could use what you want (if it is supported). 
+The segmentation silence timeout default is 1000 ms. (It must be an integer in the range 100 to 5000)
 ```dart
-AzureSpeechRecognition.initialize("your_subscription_key", "your_server_region",lang: "it-IT");
+AzureSpeechRecognition.initialize("your_subscription_key", "your_server_region",lang: "it-IT", timeout: "3000");
 ```
 
 ### Intent initializer

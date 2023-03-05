@@ -17,11 +17,12 @@ class _MyAppState extends State<MyApp> {
   String subKey = "300d3aa8af5c42f9914ae59997043825";
   String region = "eastus";
   String lang = "en-US";
+  String timeout = "1000";
   bool isRecording = false;
 
   void activateSpeechRecognizer() {
     // MANDATORY INITIALIZATION
-    AzureSpeechRecognition.initialize(subKey, region, lang: lang);
+    AzureSpeechRecognition.initialize(subKey, region, lang: lang, timeout: timeout);
 
     _speechAzure.setFinalTranscription((text) {
       // do what you want with your final transcription
