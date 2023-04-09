@@ -10,10 +10,10 @@ To use this plugin you must have already created an account on the cognitive ser
 
 ## Installation
 
-To install the package use the latest:
+To install the package use the latest version:
 
 ```dart
-azure_speech_recognition: ^0.8.3
+azure_speech_recognition: ^0.8.4
 ```
 
 ## Usage
@@ -41,7 +41,7 @@ AzureSpeechRecognition.initializeLanguageUnderstading("your_language_subscriptio
 
 ## Types of recognitions 
 
-### Simple voice recognition
+### Simple voice recognition (Android and iOS supported)
 The response is given at the end of the recognition.
 
 ```dart

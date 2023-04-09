@@ -1,3 +1,6 @@
+## 0.8.4
+- Added iOS support for simple microphone recognition.
+
 ## 0.8.3
 - Added null safety.
 - Added (optional) segmentation silence timeout for simple voice recognition.
