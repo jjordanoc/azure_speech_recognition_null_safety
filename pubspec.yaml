@@ -30,6 +30,9 @@ flutter:
       android:
         package: com.bregant.azure_speech_recognition
         pluginClass: AzureSpeechRecognitionPlugin
+      ios: 
+        package: com.jjordanoc.azure_speech_recognition_null_safety
+        pluginClass: SwiftAzureSpeechRecognitionPlugin
 
   # To add assets to your plugin package, add an assets section, like this:
   # assets:
