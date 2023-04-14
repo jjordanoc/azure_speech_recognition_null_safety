@@ -195,7 +195,9 @@ public class AzureSpeechRecognitionPlugin(): FlutterPlugin,Activity(),MethodCall
         Log.i(logTag, "Recognizer returned: " + s)
         if (result.getReason() == ResultReason.RecognizedSpeech) {
           invokeMethod("speech.onFinalResponse",s);
-
+        }
+        else {
+          invokeMethod("speech.onFinalResponse","");
         }
 
         reco.close()

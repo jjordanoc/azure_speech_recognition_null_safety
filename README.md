@@ -13,7 +13,7 @@ To use this plugin you must have already created an account on the cognitive ser
 To install the package use the latest version:
 
 ```dart
-azure_speech_recognition: ^0.8.4
+azure_speech_recognition: ^0.8.5
 ```
 
 ## Usage
