@@ -43,9 +43,9 @@ public class SwiftAzureSpeechRecognitionPlugin: NSObject, FlutterPlugin {
 
               let reco = try! SPXSpeechRecognizer(speechConfiguration: speechConfig!, audioConfiguration: audioConfig)
 
-              reco.addRecognizingEventHandler() {reco, evt in
-                  print("intermediate recognition result: \(evt.result.text ?? "(no result)")")
-              }
+//               reco.addRecognizingEventHandler() {reco, evt in
+//                   print("intermediate recognition result: \(evt.result.text ?? "(no result)")")
+//               }
 
               print("Listening...")
 
