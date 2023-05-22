@@ -17,7 +17,7 @@ class _MyAppState extends State<MyApp> {
   String subKey = "1ae61ffbb49243e58cba2b322565d80f";
   String region = "eastus";
   String lang = "en-US";
-  String timeout = "5000";
+  String timeout = "2000";
   bool isRecording = false;
 
   void activateSpeechRecognizer() {

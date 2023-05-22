@@ -20,7 +20,7 @@ public class SwiftAzureSpeechRecognitionPlugin: NSObject, FlutterPlugin {
         let serviceRegion = args?["region"] ?? ""
         let lang = args?["language"] ?? ""
         let timeoutMs = args?["timeout"] ?? ""
-        print("Called simpleVoice")
+        print("Called simpleVoice \(speechSubscriptionKey) \(serviceRegion) \(lang) \(timeoutMs)")
         simpleSpeechRecognition(speechSubscriptionKey: speechSubscriptionKey, serviceRegion: serviceRegion, lang: lang, timeoutMs: timeoutMs)
     }
     else {
@@ -32,6 +32,7 @@ public class SwiftAzureSpeechRecognitionPlugin: NSObject, FlutterPlugin {
       var speechConfig: SPXSpeechConfiguration?
               do {
                   try speechConfig = SPXSpeechConfiguration(subscription: speechSubscriptionKey, region: serviceRegion)
+                  speechConfig!.enableDictation();
               } catch {
                   print("error \(error) happened")
                   speechConfig = nil
