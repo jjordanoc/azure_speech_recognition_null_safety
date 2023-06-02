@@ -3,7 +3,10 @@ import UIKit
 import MicrosoftCognitiveServicesSpeech
 
 public class SwiftAzureSpeechRecognitionPlugin: NSObject, FlutterPlugin {
-    var azureChannel: FlutterMethodChannel
+  var azureChannel: FlutterMethodChannel
+  var continuousListeningStarted: Bool = false
+  private var speechRecognizer: SPXSpeechRecognizer?
+  var text = ""
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "azure_speech_recognition", binaryMessenger: registrar.messenger())
     let instance: SwiftAzureSpeechRecognitionPlugin = SwiftAzureSpeechRecognitionPlugin(azureChannel: channel)
@@ -22,8 +25,14 @@ public class SwiftAzureSpeechRecognitionPlugin: NSObject, FlutterPlugin {
         let timeoutMs = args?["timeout"] ?? ""
         print("Called simpleVoice \(speechSubscriptionKey) \(serviceRegion) \(lang) \(timeoutMs)")
         simpleSpeechRecognition(speechSubscriptionKey: speechSubscriptionKey, serviceRegion: serviceRegion, lang: lang, timeoutMs: timeoutMs)
-    }
-    else {
+    } else if(call.method == "micStream"){
+    let speechSubscriptionKey = args?["subscriptionKey"] ?? ""
+            let serviceRegion = args?["region"] ?? ""
+            let lang = args?["language"] ?? ""
+            let timeoutMs = args?["timeout"] ?? ""
+            print("Called simpleVoice \(speechSubscriptionKey) \(serviceRegion) \(lang) \(timeoutMs)")
+        micStreamSpeechRecognition(speechSubscriptionKey: speechSubscriptionKey, serviceRegion: serviceRegion, lang: lang, timeoutMs: timeoutMs)
+    } else {
       result(FlutterMethodNotImplemented)
     }
   }
@@ -45,7 +54,9 @@ public class SwiftAzureSpeechRecognitionPlugin: NSObject, FlutterPlugin {
               let reco = try! SPXSpeechRecognizer(speechConfiguration: speechConfig!, audioConfiguration: audioConfig)
 
 //               reco.addRecognizingEventHandler() {reco, evt in
+
 //                   print("intermediate recognition result: \(evt.result.text ?? "(no result)")")
+
 //               }
 
               print("Listening...")
@@ -58,10 +69,45 @@ public class SwiftAzureSpeechRecognitionPlugin: NSObject, FlutterPlugin {
                   print("cancelled: \(result.reason), \(cancellationDetails.errorDetails)")
                   print("Did you set the speech resource key and region values?")
                   azureChannel.invokeMethod("speech.onFinalResponse", arguments: "")
+              } else {
+                  azureChannel.invokeMethod("speech.onFinalResponse", arguments: result.text)
               }
-      else {
-          azureChannel.invokeMethod("speech.onFinalResponse", arguments: result.text)
-      }
       
   }
+  public func micStreamSpeechRecognition(speechSubscriptionKey : String, serviceRegion : String, lang: String, timeoutMs: String) {
+        if continuousListeningStarted == true {
+           do {
+                try speechRecognizer?.stopContinuousRecognition()
+                azureChannel.invokeMethod("speech.onFinalResponse", arguments: self.text)
+                self.text = ""
+                speechRecognizer = nil
+           } catch {
+
+           }
+           continuousListeningStarted = false
+           return
+        }
+        var speechConfig: SPXSpeechConfiguration?
+        do {
+            try speechConfig = SPXSpeechConfiguration(subscription: speechSubscriptionKey, region: serviceRegion)
+            speechConfig!.enableDictation()
+        } catch {
+            print("error \(error) happened")
+            speechConfig = nil
+        }
+        //speechConfig?.speechRecognitionLanguage = lang
+        //speechConfig?.setPropertyTo(timeoutMs, by: SPXPropertyId.speechSegmentationSilenceTimeoutMs)
+        let audioConfig = SPXAudioConfiguration()
+        speechRecognizer = try! SPXSpeechRecognizer(speechConfiguration: speechConfig!, audioConfiguration: audioConfig)
+        speechRecognizer?.addRecognizingEventHandler() { reco, evt in
+             self.text = evt.result.text ?? ""
+             print("intermediate recognition result: \(evt.result.text ?? "(no result)")")
+        }
+        print("Listening...")
+        continuousListeningStarted = true
+        do {
+            try? speechRecognizer?.startContinuousRecognition()
+        } catch {
+        }
+    }
 }
