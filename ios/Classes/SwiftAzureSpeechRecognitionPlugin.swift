@@ -78,9 +78,6 @@ public class SwiftAzureSpeechRecognitionPlugin: NSObject, FlutterPlugin {
         if continuousListeningStarted == true {
            do {
                 try speechRecognizer?.stopContinuousRecognition()
-                azureChannel.invokeMethod("speech.onFinalResponse", arguments: self.text)
-                self.text = ""
-                speechRecognizer = nil
            } catch {
 
            }
@@ -99,10 +96,23 @@ public class SwiftAzureSpeechRecognitionPlugin: NSObject, FlutterPlugin {
         //speechConfig?.setPropertyTo(timeoutMs, by: SPXPropertyId.speechSegmentationSilenceTimeoutMs)
         let audioConfig = SPXAudioConfiguration()
         speechRecognizer = try! SPXSpeechRecognizer(speechConfiguration: speechConfig!, audioConfiguration: audioConfig)
-        speechRecognizer?.addRecognizingEventHandler() { reco, evt in
-             self.text = evt.result.text ?? ""
-             print("intermediate recognition result: \(evt.result.text ?? "(no result)")")
+        speechRecognizer?.addRecognizedEventHandler() { reco, evt in
+             if self.text.isEmpty == false {
+             self.text += " "
+             }
+             self.text += evt.result.text ?? ""
+             print("sentence recognition result: \(evt.result.text ?? "(no result)")")
+//              self.azureChannel.invokeMethod("speech.onFinalResponse", arguments: self.text ?? "")
         }
+        speechRecognizer?.addSessionStoppedEventHandler() {reco, evt in
+                print("Received session stopped event. SessionId: \(evt.sessionId)")
+                self.azureChannel.invokeMethod("speech.onFinalResponse", arguments: self.text)
+                self.text = ""
+                self.azureChannel.invokeMethod("speech.onRecognitionStopped",arguments:nil);
+                self.speechRecognizer = nil
+        }
+        self.azureChannel.invokeMethod("speech.onRecognitionStarted",arguments:nil)
+
         print("Listening...")
         continuousListeningStarted = true
         do {
