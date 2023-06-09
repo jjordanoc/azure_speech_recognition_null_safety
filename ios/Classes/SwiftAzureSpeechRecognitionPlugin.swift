@@ -101,6 +101,7 @@ public class SwiftAzureSpeechRecognitionPlugin: NSObject, FlutterPlugin {
              self.text += " "
              }
              self.text += evt.result.text ?? ""
+             self.azureChannel.invokeMethod("speech.onSpeech",arguments:evt.result.text ?? "")
              print("sentence recognition result: \(evt.result.text ?? "(no result)")")
 //              self.azureChannel.invokeMethod("speech.onFinalResponse", arguments: self.text ?? "")
         }
