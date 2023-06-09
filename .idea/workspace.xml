@@ -10,6 +10,7 @@
     <list default="true" id="d74b4a0f-57c1-443f-9de8-9794eb969f02" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ios/Classes/SwiftAzureSpeechRecognitionPlugin.swift" beforeDir="false" afterPath="$PROJECT_DIR$/ios/Classes/SwiftAzureSpeechRecognitionPlugin.swift" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ios/azure_speech_recognition_null_safety.podspec" beforeDir="false" afterPath="$PROJECT_DIR$/ios/azure_speech_recognition_null_safety.podspec" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

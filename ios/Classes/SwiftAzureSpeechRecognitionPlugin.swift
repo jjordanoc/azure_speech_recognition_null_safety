@@ -26,12 +26,14 @@ public class SwiftAzureSpeechRecognitionPlugin: NSObject, FlutterPlugin {
         print("Called simpleVoice \(speechSubscriptionKey) \(serviceRegion) \(lang) \(timeoutMs)")
         simpleSpeechRecognition(speechSubscriptionKey: speechSubscriptionKey, serviceRegion: serviceRegion, lang: lang, timeoutMs: timeoutMs)
     } else if(call.method == "micStream"){
-    let speechSubscriptionKey = args?["subscriptionKey"] ?? ""
-            let serviceRegion = args?["region"] ?? ""
-            let lang = args?["language"] ?? ""
-            let timeoutMs = args?["timeout"] ?? ""
-            print("Called simpleVoice \(speechSubscriptionKey) \(serviceRegion) \(lang) \(timeoutMs)")
-        micStreamSpeechRecognition(speechSubscriptionKey: speechSubscriptionKey, serviceRegion: serviceRegion, lang: lang, timeoutMs: timeoutMs)
+        let speechSubscriptionKey = args?["subscriptionKey"] ?? ""
+        let serviceRegion = args?["region"] ?? ""
+        let lang = args?["language"] ?? ""
+        let timeoutMs = args?["timeout"] ?? ""
+        print("Called simpleVoice \(speechSubscriptionKey) \(serviceRegion) \(lang) \(timeoutMs)")
+        DispatchQueue.global(qos: .userInteractive).async {
+            self.micStreamSpeechRecognition(speechSubscriptionKey: speechSubscriptionKey, serviceRegion: serviceRegion, lang: lang, timeoutMs: timeoutMs)
+        }
     } else {
       result(FlutterMethodNotImplemented)
     }
@@ -77,7 +79,9 @@ public class SwiftAzureSpeechRecognitionPlugin: NSObject, FlutterPlugin {
   public func micStreamSpeechRecognition(speechSubscriptionKey : String, serviceRegion : String, lang: String, timeoutMs: String) {
         if continuousListeningStarted == true {
            do {
+                print("stopContinuousRecognition start \(continuousListeningStarted)")
                 try speechRecognizer?.stopContinuousRecognition()
+                print("stopContinuousRecognition end")
            } catch {
 
            }
@@ -101,18 +105,25 @@ public class SwiftAzureSpeechRecognitionPlugin: NSObject, FlutterPlugin {
              self.text += " "
              }
              self.text += evt.result.text ?? ""
+             DispatchQueue.global().async{
              self.azureChannel.invokeMethod("speech.onSpeech",arguments:evt.result.text ?? "")
-             print("sentence recognition result: \(evt.result.text ?? "(no result)")")
+                print("sentence recognition result: \(evt.result.text ?? "(no result)")")
+             }
 //              self.azureChannel.invokeMethod("speech.onFinalResponse", arguments: self.text ?? "")
         }
         speechRecognizer?.addSessionStoppedEventHandler() {reco, evt in
                 print("Received session stopped event. SessionId: \(evt.sessionId)")
-                self.azureChannel.invokeMethod("speech.onFinalResponse", arguments: self.text)
-                self.text = ""
-                self.azureChannel.invokeMethod("speech.onRecognitionStopped",arguments:nil);
-                self.speechRecognizer = nil
+                DispatchQueue.global().async{
+                    self.azureChannel.invokeMethod("speech.onFinalResponse", arguments: self.text)
+                    self.text = ""
+                    self.azureChannel.invokeMethod("speech.onRecognitionStopped",arguments:nil);
+                    self.speechRecognizer = nil
+                }
+
         }
-        self.azureChannel.invokeMethod("speech.onRecognitionStarted",arguments:nil)
+        DispatchQueue.global().async{
+            self.azureChannel.invokeMethod("speech.onRecognitionStarted",arguments:nil)
+        }
 
         print("Listening...")
         continuousListeningStarted = true
