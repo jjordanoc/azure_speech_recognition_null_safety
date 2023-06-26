@@ -14,10 +14,10 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   String _centerText = 'Unknown';
   late AzureSpeechRecognition _speechAzure;
-  String subKey = "300d3aa8af5c42f9914ae59997043825";
+  String subKey = "1ae61ffbb49243e58cba2b322565d80f";
   String region = "eastus";
   String lang = "en-US";
-  String timeout = "5000";
+  String timeout = "2000";
   bool isRecording = false;
 
   void activateSpeechRecognizer() {
