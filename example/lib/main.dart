@@ -14,7 +14,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   String _centerText = 'Unknown';
   late AzureSpeechRecognition _speechAzure;
-  String subKey = "1ae61ffbb49243e58cba2b322565d80f";
+  String subKey = "YOUR SUB KEY";
   String region = "eastus";
   String lang = "en-US";
   String timeout = "2000";
@@ -59,7 +59,7 @@ class _MyAppState extends State<MyApp> {
   Future _recognizeVoice() async {
     try {
       AzureSpeechRecognition
-          .simpleVoiceRecognition(); //await platform.invokeMethod('azureVoice');
+          .continuousRecording(); //await platform.invokeMethod('azureVoice');
     } on PlatformException catch (e) {
       print("Failed to get text '${e.message}'.");
     }
@@ -77,9 +77,7 @@ class _MyAppState extends State<MyApp> {
             children: <Widget>[
               Text('TEXT RECOGNIZED : $_centerText\n'),
               FloatingActionButton(
-                onPressed: () {
-                  if (!isRecording) _recognizeVoice();
-                },
+                onPressed: _recognizeVoice,
                 child: Icon(Icons.mic),
               ),
             ],
