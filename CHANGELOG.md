@@ -1,3 +1,6 @@
+## 0.8.6
+- Feat: Added continuous speech recognition in iOS.
+
 ## 0.8.5
 - Fix: final response now returns the empty string whenever result.getReason() is different from ResultReason.RecognizedSpeech on Android.
 
