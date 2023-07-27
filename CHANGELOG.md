@@ -1,3 +1,6 @@
+## 0.8.8
+- Fix: Added 0.8.7 features to Android.
+
 ## 0.8.7
 - Feat: Partial results are now transmitted through calls to the appropriate handlers.
 - Refactor: Removed poorly documented methods. __Important__: If your application depends on any of these methods consider staying on version 0.8.6.

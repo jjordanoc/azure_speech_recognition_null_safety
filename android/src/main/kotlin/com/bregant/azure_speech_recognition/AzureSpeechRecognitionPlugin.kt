@@ -190,6 +190,12 @@ public class AzureSpeechRecognitionPlugin(): FlutterPlugin,Activity(),MethodCall
 
       invokeMethod("speech.onRecognitionStarted",null);
 
+      reco.recognizing.addEventListener({ o, speechRecognitionResultEventArgs->
+        val s = speechRecognitionResultEventArgs.getResult().getText()
+        Log.i(logTag, "Intermediate result received: " + s)
+        invokeMethod("speech.onSpeech",s);
+      });
+
       setOnTaskCompletedListener(task, { result ->
         val s = result.getText()
         Log.i(logTag, "Recognizer returned: " + s)
