@@ -22,9 +22,9 @@ class AzureSpeechRecognition {
   static String _lang = "en-EN";
   static String _timeout = "1000";
 
-  static String? _languageUnderstandingSubscriptionKey;
-  static String? _languageUnderstandingServiceRegion;
-  static String? _languageUnderstandingAppId;
+  // static String? _languageUnderstandingSubscriptionKey;
+  // static String? _languageUnderstandingServiceRegion;
+  // static String? _languageUnderstandingAppId;
 
   /// default intitializer for almost every type except for the intent recognizer.
   /// Default language -> English
