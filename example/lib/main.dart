@@ -3,8 +3,12 @@ import 'dart:async';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/services.dart';
 import 'package:azure_speech_recognition_null_safety/azure_speech_recognition_null_safety.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-void main() => runApp(MyApp());
+Future main() async {
+  await dotenv.load();
+  runApp(MyApp());
+}
 
 class MyApp extends StatefulWidget {
   @override
@@ -14,7 +18,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   String _centerText = 'Unknown';
   late AzureSpeechRecognition _speechAzure;
-  String subKey = "YOUR SUB KEY";
+  String subKey = dotenv.get("AZURE_KEY");
   String region = "eastus";
   String lang = "en-US";
   String timeout = "2000";
@@ -22,7 +26,8 @@ class _MyAppState extends State<MyApp> {
 
   void activateSpeechRecognizer() {
     // MANDATORY INITIALIZATION
-    AzureSpeechRecognition.initialize(subKey, region, lang: lang, timeout: timeout);
+    AzureSpeechRecognition.initialize(subKey, region,
+        lang: lang, timeout: timeout);
 
     _speechAzure.setFinalTranscription((text) {
       // do what you want with your final transcription
@@ -31,6 +36,10 @@ class _MyAppState extends State<MyApp> {
         _centerText = text;
         isRecording = false;
       });
+    });
+
+    _speechAzure.setRecognitionResultHandler((text) {
+      debugPrint("Received partial result in recognizer: $text");
     });
 
     _speechAzure.setRecognitionStartedHandler(() {
@@ -59,7 +68,8 @@ class _MyAppState extends State<MyApp> {
   Future _recognizeVoice() async {
     try {
       AzureSpeechRecognition
-          .continuousRecording(); //await platform.invokeMethod('azureVoice');
+          .simpleVoiceRecognition(); //await platform.invokeMethod('azureVoice');
+      print("Started recognition with subKey: $subKey");
     } on PlatformException catch (e) {
       print("Failed to get text '${e.message}'.");
     }
@@ -77,7 +87,9 @@ class _MyAppState extends State<MyApp> {
             children: <Widget>[
               Text('TEXT RECOGNIZED : $_centerText\n'),
               FloatingActionButton(
-                onPressed: _recognizeVoice,
+                onPressed: () {
+                  if (!isRecording) _recognizeVoice();
+                },
                 child: Icon(Icons.mic),
               ),
             ],

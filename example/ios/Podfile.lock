@@ -30,6 +30,6 @@ SPEC CHECKSUMS:
   MicrosoftCognitiveServicesSpeech-iOS: 0de20a8ebb6bbd87decaeaa9a707dd40830106a6
   permission_handler_apple: 44366e37eaf29454a1e7b1b7d736c2cceaeb17ce
 
-PODFILE CHECKSUM: ef19549a9bc3046e7bb7d2fab4d021637c0c58a3
+PODFILE CHECKSUM: 98c89f99472519ff817847b3d71731d768a7c74c
 
 COCOAPODS: 1.12.1

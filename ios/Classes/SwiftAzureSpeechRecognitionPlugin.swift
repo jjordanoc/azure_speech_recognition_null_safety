@@ -58,6 +58,7 @@ public class SwiftAzureSpeechRecognitionPlugin: NSObject, FlutterPlugin {
         let reco = try! SPXSpeechRecognizer(speechConfiguration: speechConfig!, audioConfiguration: audioConfig)
         reco.addRecognizingEventHandler() {reco, evt in
             print("intermediate recognition result: \(evt.result.text ?? "(no result)")")
+            self.azureChannel.invokeMethod("speech.onSpeech", arguments: evt.result.text)
         }
         print("Listening...")
         let result = try! reco.recognizeOnce()
@@ -109,6 +110,7 @@ public class SwiftAzureSpeechRecognitionPlugin: NSObject, FlutterPlugin {
             continousSpeechRecognizer = try! SPXSpeechRecognizer(speechConfiguration: speechConfig, audioConfiguration: audioConfig)
             continousSpeechRecognizer!.addRecognizingEventHandler() {reco, evt in
                 print("intermediate recognition result: \(evt.result.text ?? "(no result)")")
+                self.azureChannel.invokeMethod("speech.onSpeech", arguments: evt.result.text)
             }
             continousSpeechRecognizer!.addRecognizedEventHandler({reco, evt in
                 let res = evt.result.text
