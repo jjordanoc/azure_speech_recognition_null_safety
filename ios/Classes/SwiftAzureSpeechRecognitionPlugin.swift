@@ -61,18 +61,20 @@ public class SwiftAzureSpeechRecognitionPlugin: NSObject, FlutterPlugin {
             self.azureChannel.invokeMethod("speech.onSpeech", arguments: evt.result.text)
         }
         print("Listening...")
-        let result = try! reco.recognizeOnce()
-        print("recognition result: \(result.text ?? "(no result)"), reason: \(result.reason.rawValue)")
-        print("reason \(result.reason)")
-        if result.reason != SPXResultReason.recognizedSpeech {
-            let cancellationDetails = try! SPXCancellationDetails(fromCanceledRecognitionResult: result)
-            print("cancelled: \(result.reason), \(cancellationDetails.errorDetails)")
-            print("Did you set the speech resource key and region values?")
-            azureChannel.invokeMethod("speech.onFinalResponse", arguments: "")
-        }
-        else {
-            azureChannel.invokeMethod("speech.onFinalResponse", arguments: result.text)
-        }
+        try! reco.recognizeOnceAsync({ result in
+            print("recognition result: \(result.text ?? "(no result)"), reason: \(result.reason.rawValue)")
+            print("reason \(result.reason)")
+            if result.reason != SPXResultReason.recognizedSpeech {
+                let cancellationDetails = try! SPXCancellationDetails(fromCanceledRecognitionResult: result)
+                print("cancelled: \(result.reason), \(cancellationDetails.errorDetails)")
+                print("Did you set the speech resource key and region values?")
+                self.azureChannel.invokeMethod("speech.onFinalResponse", arguments: "")
+            }
+            else {
+                self.azureChannel.invokeMethod("speech.onFinalResponse", arguments: result.text)
+            }
+        })
+        
     }
     
     public func continuousStream(speechSubscriptionKey : String, serviceRegion : String, lang: String) {
