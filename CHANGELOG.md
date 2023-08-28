@@ -1,3 +1,6 @@
+## 0.8.9
+- Fix: Use asynchronous recognition on iOS to avoid blocking main isolate.
+
 ## 0.8.8
 - Fix: Added 0.8.7 features to Android.
 

@@ -15,7 +15,7 @@ __Important__: To use this plugin you must have already created an account on th
 To install the package use the latest version:
 
 ```dart
-azure_speech_recognition_null_safety: ^0.8.7
+azure_speech_recognition_null_safety: ^<insert_latest_version_here>
 ```
 
 ## Usage
