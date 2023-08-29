@@ -149,6 +149,10 @@ class AzureSpeechRecognition {
     }
   }
 
+  static cancelActiveSimpleRecognitionTasks() {
+    _channel.invokeMethod('cancelActiveSimpleRecognitionTasks');
+  }
+
   // static dictationMode() {
   //   if (_subKey != null && _region != null) {
   //     _channel.invokeMethod('dictationMode',

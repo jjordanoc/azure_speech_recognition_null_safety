@@ -1,3 +1,6 @@
+## 0.9.0
+- Feat: Added task cancellation, which allows cancelling all active Simple Recognition tasks.
+
 ## 0.8.9
 - Fix: Use asynchronous recognition on iOS to avoid blocking main isolate.
 
