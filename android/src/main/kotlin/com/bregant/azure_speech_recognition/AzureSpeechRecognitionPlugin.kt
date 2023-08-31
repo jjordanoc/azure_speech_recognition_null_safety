@@ -43,6 +43,7 @@ public class AzureSpeechRecognitionPlugin(): FlutterPlugin,Activity(),MethodCall
   private  lateinit var handler : Handler;
   var continuousListeningStarted : Boolean = false;
   lateinit var  reco : SpeechRecognizer;
+  lateinit var  task_global : Future<SpeechRecognitionResult>;
   var enableDictation : Boolean = false;
   private fun createMicrophoneStream() : MicrophoneStream{
     if (microphoneStream != null) {
@@ -175,42 +176,42 @@ public class AzureSpeechRecognitionPlugin(): FlutterPlugin,Activity(),MethodCall
       var audioInput : AudioConfig = AudioConfig.fromStreamInput(createMicrophoneStream());
 
       var config : SpeechConfig = SpeechConfig.fromSubscription(speechSubscriptionKey, serviceRegion); 
-      assert(config != null);
 
       config.speechRecognitionLanguage = lang;
       config.setProperty(PropertyId.Speech_SegmentationSilenceTimeoutMs, timeoutMs);
 
       var reco : SpeechRecognizer = SpeechRecognizer(config,audioInput);
 
-      assert(reco != null);
-
       var task : Future<SpeechRecognitionResult> = reco.recognizeOnceAsync();
 
-      assert(task != null);
+      task_global=task;
 
       invokeMethod("speech.onRecognitionStarted",null);
 
       reco.recognizing.addEventListener({ o, speechRecognitionResultEventArgs->
-        val s = speechRecognitionResultEventArgs.getResult().getText()
-        Log.i(logTag, "Intermediate result received: " + s)
-        invokeMethod("speech.onSpeech",s);
+        val s = speechRecognitionResultEventArgs.getResult().getText();
+        Log.i(logTag, "Intermediate result received: " + s);
+        if(task_global===task){
+          invokeMethod("speech.onSpeech",s);
+        }
       });
 
       setOnTaskCompletedListener(task, { result ->
         val s = result.getText()
         Log.i(logTag, "Recognizer returned: " + s)
-        if (result.getReason() == ResultReason.RecognizedSpeech) {
-          invokeMethod("speech.onFinalResponse",s);
+        if(task_global===task){
+          if (result.getReason() == ResultReason.RecognizedSpeech) {
+            invokeMethod("speech.onFinalResponse",s);
+          }
+          else {
+            invokeMethod("speech.onFinalResponse","");
+          }
         }
-        else {
-          invokeMethod("speech.onFinalResponse","");
-        }
-
-        reco.close()
-
+        reco.close();
       })
 
     }catch(exec:Exception){
+      Log.i(logTag,"ERROR")
       assert(false);
       invokeMethod("speech.onException", "Exception: "+exec.message);
 
