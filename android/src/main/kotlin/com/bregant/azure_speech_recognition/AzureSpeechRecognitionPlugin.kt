@@ -176,18 +176,13 @@ public class AzureSpeechRecognitionPlugin(): FlutterPlugin,Activity(),MethodCall
       var audioInput : AudioConfig = AudioConfig.fromStreamInput(createMicrophoneStream());
 
       var config : SpeechConfig = SpeechConfig.fromSubscription(speechSubscriptionKey, serviceRegion); 
-      //assert(config != null);
 
       config.speechRecognitionLanguage = lang;
       config.setProperty(PropertyId.Speech_SegmentationSilenceTimeoutMs, timeoutMs);
 
       var reco : SpeechRecognizer = SpeechRecognizer(config,audioInput);
 
-      //assert(reco != null);
-
       var task : Future<SpeechRecognitionResult> = reco.recognizeOnceAsync();
-
-      //assert(task != null);
 
       task_global=task;
 
@@ -214,8 +209,6 @@ public class AzureSpeechRecognitionPlugin(): FlutterPlugin,Activity(),MethodCall
         }
         reco.close();
       })
-      
-      Log.i(logTag, "BBBBBBBBBBBBBBBBBB");
 
     }catch(exec:Exception){
       Log.i(logTag,"ERROR")
