@@ -35,6 +35,16 @@ public class SwiftAzureSpeechRecognitionPlugin: NSObject, FlutterPlugin {
             print("Called simpleVoice")
             simpleSpeechRecognition(speechSubscriptionKey: speechSubscriptionKey, serviceRegion: serviceRegion, lang: lang, timeoutMs: timeoutMs)
         }
+        else if (call.method == "simpleVoiceWithAssessment") {
+            let speechSubscriptionKey = args?["subscriptionKey"] ?? ""
+            let serviceRegion = args?["region"] ?? ""
+            let lang = args?["language"] ?? ""
+            let timeoutMs = args?["timeout"] ?? ""
+            let referenceText = args?["referenceText"] ?? ""
+            let phonemeAlphabet = args?["phonemeAlphabet"] ?? "IPA"
+            print("Called simpleVoiceWithAssessment")
+            simpleSpeechRecognitionWithAssessment(referenceText: referenceText, phonemeAlphabet: phonemeAlphabet, speechSubscriptionKey: speechSubscriptionKey, serviceRegion: serviceRegion, lang: lang, timeoutMs: timeoutMs)
+        }
         else if (call.method == "continuousStream") {
             let speechSubscriptionKey = args?["subscriptionKey"] ?? ""
             let serviceRegion = args?["region"] ?? ""
@@ -105,6 +115,68 @@ public class SwiftAzureSpeechRecognitionPlugin: NSObject, FlutterPlugin {
                 }
                 else {
                     self.azureChannel.invokeMethod("speech.onFinalResponse", arguments: result.text)
+                }
+                
+            }
+            self.simpleRecognitionTasks.removeValue(forKey: taskId)
+        }
+        simpleRecognitionTasks[taskId] = SimpleRecognitionTask(task: task, isCanceled: false)
+    }
+
+    public func simpleSpeechRecognitionWithAssessment(referenceText: String, phonemeAlphabet: String, speechSubscriptionKey : String, serviceRegion : String, lang: String, timeoutMs: String) {
+        print("Created new recognition task")
+        let taskId = UUID().uuidString;
+        let task = Task {
+            print("Started recognition with task ID \(taskId)")
+            var speechConfig: SPXSpeechConfiguration?
+            var pronunciationAssessmentConfig: SPXPronunciationAssessmentConfiguration?
+            do {
+                // Initialize speech recognizer and specify correct subscription key and service region
+                try speechConfig = SPXSpeechConfiguration(subscription: speechSubscriptionKey, region: serviceRegion)
+                try pronunciationAssessmentConfig = SPXPronunciationAssessmentConfiguration.init(
+                    referenceText,
+                    gradingSystem: SPXPronunciationAssessmentGradingSystem.hundredMark,
+                    granularity: SPXPronunciationAssessmentGranularity.phoneme,
+                    enableMiscue: true)
+            } catch {
+                print("error \(error) happened")
+                speechConfig = nil
+            }
+            pronunciationAssessmentConfig?.phonemeAlphabet = phonemeAlphabet
+            speechConfig?.speechRecognitionLanguage = lang
+            speechConfig?.setPropertyTo(timeoutMs, by: SPXPropertyId.speechSegmentationSilenceTimeoutMs)
+            
+            let audioConfig = SPXAudioConfiguration()
+            let reco = try! SPXSpeechRecognizer(speechConfiguration: speechConfig!, audioConfiguration: audioConfig)
+            try! pronunciationAssessmentConfig?.apply(to: reco)
+            
+            reco.addRecognizingEventHandler() {reco, evt in
+                if (self.simpleRecognitionTasks[taskId]?.isCanceled ?? false) { // Discard intermediate results if the task was cancelled
+                    print("Ignoring partial result. TaskID: \(taskId)")
+                }
+                else {
+                    print("Intermediate result: \(evt.result.text ?? "(no result)")\nTaskID: \(taskId)")
+                    self.azureChannel.invokeMethod("speech.onSpeech", arguments: evt.result.text)
+                }
+            }
+            
+            let result = try! reco.recognizeOnce()
+            if (Task.isCancelled) {
+                print("Ignoring final result. TaskID: \(taskId)")
+            } else {
+                print("Final result: \(result.text ?? "(no result)")\nReason: \(result.reason.rawValue)\nTaskID: \(taskId)")
+                let pronunciationAssessmentResultJson = result.properties?.getPropertyBy(SPXPropertyId.speechServiceResponseJsonResult)
+                print("pronunciationAssessmentResultJson: \(pronunciationAssessmentResultJson ?? "(no result)")")
+                if result.reason != SPXResultReason.recognizedSpeech {
+                    let cancellationDetails = try! SPXCancellationDetails(fromCanceledRecognitionResult: result)
+                    print("Cancelled: \(cancellationDetails.description), \(cancellationDetails.errorDetails)\nTaskID: \(taskId)")
+                    print("Did you set the speech resource key and region values?")
+                    self.azureChannel.invokeMethod("speech.onFinalResponse", arguments: "")
+                    self.azureChannel.invokeMethod("speech.onAssessmentResult", arguments: "")
+                }
+                else {
+                    self.azureChannel.invokeMethod("speech.onFinalResponse", arguments: result.text)
+                    self.azureChannel.invokeMethod("speech.onAssessmentResult", arguments: pronunciationAssessmentResultJson)
                 }
                 
             }

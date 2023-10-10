@@ -1,3 +1,6 @@
+## 0.9.2
+- Feat: Added speech assessment feature.
+
 ## 0.9.0
 - Feat: Added task cancellation, which allows cancelling all active Simple Recognition tasks.
 

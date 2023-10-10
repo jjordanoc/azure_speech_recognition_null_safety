@@ -56,6 +56,7 @@ class AzureSpeechRecognition {
   StringResultHandler? exceptionHandler;
   StringResultHandler? recognitionResultHandler;
   StringResultHandler? finalTranscriptionHandler;
+  StringResultHandler? assessmentResultHandler;
   VoidCallback? recognitionStartedHandler;
   VoidCallback? startRecognitionHandler;
   VoidCallback? recognitionStoppedHandler;
@@ -70,6 +71,9 @@ class AzureSpeechRecognition {
         break;
       case "speech.onFinalResponse":
         finalTranscriptionHandler!(call.arguments);
+        break;
+      case "speech.onAssessmentResult":
+        assessmentResultHandler!(call.arguments);
         break;
       case "speech.onStartAvailable":
         startRecognitionHandler!();
@@ -93,6 +97,9 @@ class AzureSpeechRecognition {
   void setFinalTranscription(StringResultHandler handler) =>
       finalTranscriptionHandler = handler;
 
+  void setAssessmentResult(StringResultHandler handler) =>
+      assessmentResultHandler = handler;
+
   /// called when an exception occur
   void onExceptionHandler(StringResultHandler handler) =>
       exceptionHandler = handler;
@@ -109,6 +116,8 @@ class AzureSpeechRecognition {
   void setRecognitionStoppedHandler(VoidCallback handler) =>
       recognitionStoppedHandler = handler;
 
+      
+
   /// Simple voice Recognition, the result will be sent only at the end.
   /// Return the text obtained or the error catched
 
@@ -119,6 +128,21 @@ class AzureSpeechRecognition {
         'subscriptionKey': _subKey,
         'region': _region,
         'timeout': _timeout
+      });
+    } else {
+      throw "Error: SpeechRecognitionParameters not initialized correctly";
+    }
+  }
+
+  static simpleVoiceRecognitionWithAssessment({String? referenceText, String? phonemeAlphabet}) {
+    if ((_subKey != null && _region != null)) {
+      _channel.invokeMethod('simpleVoiceWithAssessment', {
+        'language': _lang,
+        'subscriptionKey': _subKey,
+        'region': _region,
+        'timeout': _timeout,
+        'referenceText' : referenceText,
+        'phonemeAlphabet' : phonemeAlphabet,
       });
     } else {
       throw "Error: SpeechRecognitionParameters not initialized correctly";
@@ -148,6 +172,8 @@ class AzureSpeechRecognition {
       throw "Error: SpeechRecognitionParameters not initialized correctly";
     }
   }
+
+  
 
   static cancelActiveSimpleRecognitionTasks() {
     _channel.invokeMethod('cancelActiveSimpleRecognitionTasks');
