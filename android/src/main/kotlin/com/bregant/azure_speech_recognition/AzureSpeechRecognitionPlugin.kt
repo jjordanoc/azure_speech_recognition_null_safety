@@ -135,31 +135,31 @@ class AzureSpeechRecognitionPlugin : FlutterPlugin, Activity(), MethodCallHandle
         val logTag: String = "simpleVoice"
         try {
 
-            var audioInput: AudioConfig = AudioConfig.fromDefaultMicrophoneInput()
+            val audioInput: AudioConfig = AudioConfig.fromDefaultMicrophoneInput()
 
-            var config: SpeechConfig =
+            val config: SpeechConfig =
                 SpeechConfig.fromSubscription(speechSubscriptionKey, serviceRegion)
 
             config.speechRecognitionLanguage = lang
             config.setProperty(PropertyId.Speech_SegmentationSilenceTimeoutMs, timeoutMs)
 
-            var reco: SpeechRecognizer = SpeechRecognizer(config, audioInput)
+            val reco: SpeechRecognizer = SpeechRecognizer(config, audioInput)
 
-            var task: Future<SpeechRecognitionResult> = reco.recognizeOnceAsync()
+            val task: Future<SpeechRecognitionResult> = reco.recognizeOnceAsync()
 
             task_global = task
 
             invokeMethod("speech.onRecognitionStarted", null)
 
-            reco.recognizing.addEventListener({ o, speechRecognitionResultEventArgs ->
+            reco.recognizing.addEventListener { _, speechRecognitionResultEventArgs ->
                 val s = speechRecognitionResultEventArgs.result.text
                 Log.i(logTag, "Intermediate result received: " + s)
                 if (task_global === task) {
                     invokeMethod("speech.onSpeech", s)
                 }
-            })
+            }
 
-            setOnTaskCompletedListener(task, { result ->
+            setOnTaskCompletedListener(task) { result ->
                 val s = result.text
                 Log.i(logTag, "Recognizer returned: " + s)
                 if (task_global === task) {
@@ -170,7 +170,7 @@ class AzureSpeechRecognitionPlugin : FlutterPlugin, Activity(), MethodCallHandle
                     }
                 }
                 reco.close()
-            })
+            }
 
         } catch (exec: Exception) {
             Log.i(logTag, "ERROR")
@@ -368,9 +368,16 @@ class AzureSpeechRecognitionPlugin : FlutterPlugin, Activity(), MethodCallHandle
             }
 
             reco.recognized.addEventListener { _, speechRecognitionResultEventArgs ->
-                val s = speechRecognitionResultEventArgs.result.text
+                val result = speechRecognitionResultEventArgs.result;
+                val s = result.text
+                val pronunciationAssessmentResultJson =
+                    result.properties.getProperty(PropertyId.SpeechServiceResponse_JsonResult)
                 Log.i(logTag, "Final result received: $s")
+                Log.i(
+                    logTag, "pronunciationAssessmentResultJson: $pronunciationAssessmentResultJson"
+                )
                 invokeMethod("speech.onFinalResponse", s)
+                invokeMethod("speech.onAssessmentResult", pronunciationAssessmentResultJson)
             }
 
             val startingTask = reco.startContinuousRecognitionAsync()
