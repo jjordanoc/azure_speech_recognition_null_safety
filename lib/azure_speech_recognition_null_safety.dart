@@ -134,13 +134,15 @@ class AzureSpeechRecognition {
     }
   }
 
-  static simpleVoiceRecognitionWithAssessment({String? referenceText, String? phonemeAlphabet}) {
+  static simpleVoiceRecognitionWithAssessment({String? referenceText, String? phonemeAlphabet, String? granularity, bool? enableMiscue}) {
     if ((_subKey != null && _region != null)) {
       _channel.invokeMethod('simpleVoiceWithAssessment', {
         'language': _lang,
         'subscriptionKey': _subKey,
         'region': _region,
         'timeout': _timeout,
+        'granularity' : granularity,
+        'enableMiscue' : enableMiscue,
         'referenceText' : referenceText,
         'phonemeAlphabet' : phonemeAlphabet,
       });
@@ -173,6 +175,21 @@ class AzureSpeechRecognition {
     }
   }
 
+  static continuousRecordingWithAssessment({String? referenceText, String? phonemeAlphabet, String? granularity, bool? enableMiscue}) {
+    if ((_subKey != null && _region != null)) {
+      _channel.invokeMethod('continuousStreamWithAssessment', {
+        'language': _lang,
+        'subscriptionKey': _subKey,
+        'region': _region,
+        'granularity' : granularity,
+        'enableMiscue' : enableMiscue,
+        'referenceText' : referenceText,
+        'phonemeAlphabet' : phonemeAlphabet,
+      });
+    } else {
+      throw "Error: SpeechRecognitionParameters not initialized correctly";
+    }
+  }
   
 
   static cancelActiveSimpleRecognitionTasks() {

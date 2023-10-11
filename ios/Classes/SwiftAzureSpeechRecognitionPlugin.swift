@@ -26,29 +26,41 @@ public class SwiftAzureSpeechRecognitionPlugin: NSObject, FlutterPlugin {
     }
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        let args = call.arguments as? Dictionary<String, String>
+        let args = call.arguments as? Dictionary<String, Any>
         if (call.method == "simpleVoice") {
-            let speechSubscriptionKey = args?["subscriptionKey"] ?? ""
-            let serviceRegion = args?["region"] ?? ""
-            let lang = args?["language"] ?? ""
-            let timeoutMs = args?["timeout"] ?? ""
+            let speechSubscriptionKey = (args?["subscriptionKey"] ?? "") as! String
+            let serviceRegion = (args?["region"] ?? "") as! String
+            let lang = (args?["language"] ?? "") as! String
+            let timeoutMs = (args?["timeout"] ?? "") as! String
             print("Called simpleVoice")
             simpleSpeechRecognition(speechSubscriptionKey: speechSubscriptionKey, serviceRegion: serviceRegion, lang: lang, timeoutMs: timeoutMs)
         }
         else if (call.method == "simpleVoiceWithAssessment") {
-            let speechSubscriptionKey = args?["subscriptionKey"] ?? ""
-            let serviceRegion = args?["region"] ?? ""
-            let lang = args?["language"] ?? ""
-            let timeoutMs = args?["timeout"] ?? ""
-            let referenceText = args?["referenceText"] ?? ""
-            let phonemeAlphabet = args?["phonemeAlphabet"] ?? "IPA"
+            let speechSubscriptionKey = (args?["subscriptionKey"] ?? "") as! String
+            let serviceRegion = (args?["region"] ?? "") as! String
+            let lang = (args?["language"] ?? "") as! String
+            let timeoutMs = (args?["timeout"] ?? "") as! String
+            let referenceText = (args?["referenceText"] ?? "") as! String
+            let phonemeAlphabet = (args?["phonemeAlphabet"] ?? "IPA") as! String
+            let granularityString = (args?["granularity"] ?? "phoneme") as! String
+            let enableMiscue = (args?["enableMiscue"] ?? false) as! Bool
+            var granularity: SPXPronunciationAssessmentGranularity
+            if (granularityString == "text") {
+                granularity = SPXPronunciationAssessmentGranularity.fullText
+            }
+            else if (granularityString == "word") {
+                granularity = SPXPronunciationAssessmentGranularity.word
+            }
+            else {
+                granularity = SPXPronunciationAssessmentGranularity.phoneme
+            }
             print("Called simpleVoiceWithAssessment")
-            simpleSpeechRecognitionWithAssessment(referenceText: referenceText, phonemeAlphabet: phonemeAlphabet, speechSubscriptionKey: speechSubscriptionKey, serviceRegion: serviceRegion, lang: lang, timeoutMs: timeoutMs)
+            simpleSpeechRecognitionWithAssessment(referenceText: referenceText, phonemeAlphabet: phonemeAlphabet,  granularity: granularity, enableMiscue: enableMiscue, speechSubscriptionKey: speechSubscriptionKey, serviceRegion: serviceRegion, lang: lang, timeoutMs: timeoutMs)
         }
         else if (call.method == "continuousStream") {
-            let speechSubscriptionKey = args?["subscriptionKey"] ?? ""
-            let serviceRegion = args?["region"] ?? ""
-            let lang = args?["language"] ?? ""
+            let speechSubscriptionKey = (args?["subscriptionKey"] ?? "") as! String
+            let serviceRegion = (args?["region"] ?? "") as! String
+            let lang = (args?["language"] ?? "") as! String
             print("Called continuousStream")
             continuousStream(speechSubscriptionKey: speechSubscriptionKey, serviceRegion: serviceRegion, lang: lang)
         }
@@ -123,7 +135,7 @@ public class SwiftAzureSpeechRecognitionPlugin: NSObject, FlutterPlugin {
         simpleRecognitionTasks[taskId] = SimpleRecognitionTask(task: task, isCanceled: false)
     }
 
-    public func simpleSpeechRecognitionWithAssessment(referenceText: String, phonemeAlphabet: String, speechSubscriptionKey : String, serviceRegion : String, lang: String, timeoutMs: String) {
+    public func simpleSpeechRecognitionWithAssessment(referenceText: String, phonemeAlphabet: String, granularity: SPXPronunciationAssessmentGranularity, enableMiscue: Bool, speechSubscriptionKey : String, serviceRegion : String, lang: String, timeoutMs: String) {
         print("Created new recognition task")
         let taskId = UUID().uuidString;
         let task = Task {
@@ -136,8 +148,8 @@ public class SwiftAzureSpeechRecognitionPlugin: NSObject, FlutterPlugin {
                 try pronunciationAssessmentConfig = SPXPronunciationAssessmentConfiguration.init(
                     referenceText,
                     gradingSystem: SPXPronunciationAssessmentGradingSystem.hundredMark,
-                    granularity: SPXPronunciationAssessmentGranularity.phoneme,
-                    enableMiscue: true)
+                    granularity: granularity,
+                    enableMiscue: enableMiscue)
             } catch {
                 print("error \(error) happened")
                 speechConfig = nil
