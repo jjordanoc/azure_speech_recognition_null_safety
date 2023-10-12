@@ -15,7 +15,7 @@ public class SwiftAzureSpeechRecognitionPlugin: NSObject, FlutterPlugin {
     var continousListeningStarted: Bool = false
     var continousSpeechRecognizer: SPXSpeechRecognizer? = nil
     var simpleRecognitionTasks: Dictionary<String, SimpleRecognitionTask> = [:]
-   
+    
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(name: "azure_speech_recognition", binaryMessenger: registrar.messenger())
         let instance: SwiftAzureSpeechRecognitionPlugin = SwiftAzureSpeechRecognitionPlugin(azureChannel: channel)
@@ -27,14 +27,14 @@ public class SwiftAzureSpeechRecognitionPlugin: NSObject, FlutterPlugin {
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         let args = call.arguments as? Dictionary<String, Any>
-        let speechSubscriptionKey = (args?["subscriptionKey"] ?? "") as! String
-        let serviceRegion = (args?["region"] ?? "") as! String
-        let lang = (args?["language"] ?? "") as! String
-        let timeoutMs = (args?["timeout"] ?? "") as! String
-        let referenceText = (args?["referenceText"] ?? "") as! String
-        let phonemeAlphabet = (args?["phonemeAlphabet"] ?? "IPA") as! String
-        let granularityString = (args?["granularity"] ?? "phoneme") as! String
-        let enableMiscue = (args?["enableMiscue"] ?? false) as! Bool
+        let speechSubscriptionKey = args?["subscriptionKey"] as? String ?? ""
+        let serviceRegion = args?["region"] as? String ?? ""
+        let lang = args?["language"] as? String ?? ""
+        let timeoutMs = args?["timeout"] as? String ?? ""
+        let referenceText = args?["referenceText"] as? String ?? ""
+        let phonemeAlphabet = args?["phonemeAlphabet"] as? String ?? "IPA"
+        let granularityString = args?["granularity"] as? String ?? "phoneme"
+        let enableMiscue = args?["enableMiscue"] as? Bool ?? false
         var granularity: SPXPronunciationAssessmentGranularity
         if (granularityString == "text") {
             granularity = SPXPronunciationAssessmentGranularity.fullText
@@ -53,9 +53,17 @@ public class SwiftAzureSpeechRecognitionPlugin: NSObject, FlutterPlugin {
             print("Called simpleVoiceWithAssessment")
             simpleSpeechRecognitionWithAssessment(referenceText: referenceText, phonemeAlphabet: phonemeAlphabet,  granularity: granularity, enableMiscue: enableMiscue, speechSubscriptionKey: speechSubscriptionKey, serviceRegion: serviceRegion, lang: lang, timeoutMs: timeoutMs)
         }
+        else if (call.method == "isContinuousRecognitionOn") {
+            print("Called isContinuousRecognitionOn: \(continousListeningStarted)")
+            result(continousListeningStarted)
+        }
         else if (call.method == "continuousStream") {
             print("Called continuousStream")
             continuousStream(speechSubscriptionKey: speechSubscriptionKey, serviceRegion: serviceRegion, lang: lang)
+        }
+        else if (call.method == "continuousStreamWithAssessment") {
+            print("Called continuousStreamWithAssessment")
+            continuousStreamWithAssessment(referenceText: referenceText, phonemeAlphabet: phonemeAlphabet,  granularity: granularity, enableMiscue: enableMiscue, speechSubscriptionKey: speechSubscriptionKey, serviceRegion: serviceRegion, lang: lang)
         }
         else {
             result(FlutterMethodNotImplemented)
@@ -71,7 +79,7 @@ public class SwiftAzureSpeechRecognitionPlugin: NSObject, FlutterPlugin {
         }
     }
     
-    public func simpleSpeechRecognition(speechSubscriptionKey : String, serviceRegion : String, lang: String, timeoutMs: String) {
+    private func simpleSpeechRecognition(speechSubscriptionKey : String, serviceRegion : String, lang: String, timeoutMs: String) {
         print("Created new recognition task")
         cancelActiveSimpleRecognitionTasks()
         let taskId = UUID().uuidString;
@@ -79,10 +87,11 @@ public class SwiftAzureSpeechRecognitionPlugin: NSObject, FlutterPlugin {
             print("Started recognition with task ID \(taskId)")
             var speechConfig: SPXSpeechConfiguration?
             do {
+                let audioSession = AVAudioSession.sharedInstance()
                 // Request access to the microphone
-                try AVAudioSession.sharedInstance().setCategory(AVAudioSession.Category.playAndRecord, mode: AVAudioSession.Mode.default, options: AVAudioSession.CategoryOptions.defaultToSpeaker)
-                print("Request access to the microphone")
-                
+                try audioSession.setCategory(AVAudioSession.Category.record, mode: AVAudioSession.Mode.default, options: AVAudioSession.CategoryOptions.allowBluetooth)
+                try audioSession.setActive(true)
+                print("Setting custom audio session")
                 // Initialize speech recognizer and specify correct subscription key and service region
                 try speechConfig = SPXSpeechConfiguration(subscription: speechSubscriptionKey, region: serviceRegion)
             } catch {
@@ -125,8 +134,8 @@ public class SwiftAzureSpeechRecognitionPlugin: NSObject, FlutterPlugin {
         }
         simpleRecognitionTasks[taskId] = SimpleRecognitionTask(task: task, isCanceled: false)
     }
-
-    public func simpleSpeechRecognitionWithAssessment(referenceText: String, phonemeAlphabet: String, granularity: SPXPronunciationAssessmentGranularity, enableMiscue: Bool, speechSubscriptionKey : String, serviceRegion : String, lang: String, timeoutMs: String) {
+    
+    private func simpleSpeechRecognitionWithAssessment(referenceText: String, phonemeAlphabet: String, granularity: SPXPronunciationAssessmentGranularity, enableMiscue: Bool, speechSubscriptionKey : String, serviceRegion : String, lang: String, timeoutMs: String) {
         print("Created new recognition task")
         cancelActiveSimpleRecognitionTasks()
         let taskId = UUID().uuidString;
@@ -135,6 +144,11 @@ public class SwiftAzureSpeechRecognitionPlugin: NSObject, FlutterPlugin {
             var speechConfig: SPXSpeechConfiguration?
             var pronunciationAssessmentConfig: SPXPronunciationAssessmentConfiguration?
             do {
+                let audioSession = AVAudioSession.sharedInstance()
+                // Request access to the microphone
+                try audioSession.setCategory(AVAudioSession.Category.record, mode: AVAudioSession.Mode.default, options: AVAudioSession.CategoryOptions.allowBluetooth)
+                try audioSession.setActive(true)
+                print("Setting custom audio session")
                 // Initialize speech recognizer and specify correct subscription key and service region
                 try speechConfig = SPXSpeechConfiguration(subscription: speechSubscriptionKey, region: serviceRegion)
                 try pronunciationAssessmentConfig = SPXPronunciationAssessmentConfiguration.init(
@@ -189,7 +203,7 @@ public class SwiftAzureSpeechRecognitionPlugin: NSObject, FlutterPlugin {
         simpleRecognitionTasks[taskId] = SimpleRecognitionTask(task: task, isCanceled: false)
     }
     
-    public func continuousStream(speechSubscriptionKey : String, serviceRegion : String, lang: String) {
+    private func continuousStream(speechSubscriptionKey : String, serviceRegion : String, lang: String) {
         if (continousListeningStarted) {
             print("Stopping continous recognition")
             do {
@@ -205,15 +219,16 @@ public class SwiftAzureSpeechRecognitionPlugin: NSObject, FlutterPlugin {
         else {
             print("Starting continous recognition")
             do {
+                let audioSession = AVAudioSession.sharedInstance()
                 // Request access to the microphone
-                try AVAudioSession.sharedInstance().setCategory(AVAudioSession.Category.playAndRecord, mode: AVAudioSession.Mode.default, options: AVAudioSession.CategoryOptions.defaultToSpeaker)
-                print("Request access to the microphone")
+                try audioSession.setCategory(AVAudioSession.Category.record, mode: AVAudioSession.Mode.default, options: AVAudioSession.CategoryOptions.allowBluetooth)
+                try audioSession.setActive(true)
+                print("Setting custom audio session")
             }
             catch {
                 print("An unexpected error occurred")
             }
             
-            // Initialize speech recognizer and specify correct subscription key and service region
             let speechConfig = try! SPXSpeechConfiguration(subscription: speechSubscriptionKey, region: serviceRegion)
             
             speechConfig.speechRecognitionLanguage = lang
@@ -232,7 +247,69 @@ public class SwiftAzureSpeechRecognitionPlugin: NSObject, FlutterPlugin {
             })
             print("Listening...")
             try! continousSpeechRecognizer!.startContinuousRecognition()
+            self.azureChannel.invokeMethod("speech.onRecognitionStarted", arguments: nil)
             continousListeningStarted = true
+        }
+    }
+    
+    private func continuousStreamWithAssessment(referenceText: String, phonemeAlphabet: String, granularity: SPXPronunciationAssessmentGranularity, enableMiscue: Bool, speechSubscriptionKey : String, serviceRegion : String, lang: String) {
+        print("Continuous recognition started: \(continousListeningStarted)")
+        if (continousListeningStarted) {
+            print("Stopping continous recognition")
+            do {
+                try continousSpeechRecognizer!.stopContinuousRecognition()
+                self.azureChannel.invokeMethod("speech.onRecognitionStopped", arguments: nil)
+                continousSpeechRecognizer = nil
+                continousListeningStarted = false
+            }
+            catch {
+                print("Error occurred stopping continous recognition")
+            }
+        }
+        else {
+            print("Starting continous recognition")
+            do {
+                let audioSession = AVAudioSession.sharedInstance()
+                // Request access to the microphone
+                try audioSession.setCategory(AVAudioSession.Category.record, mode: AVAudioSession.Mode.default, options: AVAudioSession.CategoryOptions.allowBluetooth)
+                try audioSession.setActive(true)
+                print("Setting custom audio session")
+                
+                let speechConfig = try SPXSpeechConfiguration(subscription: speechSubscriptionKey, region: serviceRegion)
+                speechConfig.speechRecognitionLanguage = lang
+                
+                let pronunciationAssessmentConfig = try SPXPronunciationAssessmentConfiguration.init(
+                    referenceText,
+                    gradingSystem: SPXPronunciationAssessmentGradingSystem.hundredMark,
+                    granularity: granularity,
+                    enableMiscue: enableMiscue)
+                pronunciationAssessmentConfig.phonemeAlphabet = phonemeAlphabet
+                
+                let audioConfig = SPXAudioConfiguration()
+                
+                continousSpeechRecognizer = try SPXSpeechRecognizer(speechConfiguration: speechConfig, audioConfiguration: audioConfig)
+                try pronunciationAssessmentConfig.apply(to: continousSpeechRecognizer!)
+                
+                continousSpeechRecognizer!.addRecognizingEventHandler() {reco, evt in
+                    print("intermediate recognition result: \(evt.result.text ?? "(no result)")")
+                    self.azureChannel.invokeMethod("speech.onSpeech", arguments: evt.result.text)
+                }
+                continousSpeechRecognizer!.addRecognizedEventHandler({reco, evt in
+                    let result = evt.result
+                    print("Final result: \(result.text ?? "(no result)")\nReason: \(result.reason.rawValue)")
+                    let pronunciationAssessmentResultJson = result.properties?.getPropertyBy(SPXPropertyId.speechServiceResponseJsonResult)
+                    print("pronunciationAssessmentResultJson: \(pronunciationAssessmentResultJson ?? "(no result)")")
+                    self.azureChannel.invokeMethod("speech.onFinalResponse", arguments: result.text)
+                    self.azureChannel.invokeMethod("speech.onAssessmentResult", arguments: pronunciationAssessmentResultJson)
+                })
+                print("Listening...")
+                try continousSpeechRecognizer!.startContinuousRecognition()
+                self.azureChannel.invokeMethod("speech.onRecognitionStarted", arguments: nil)
+                continousListeningStarted = true
+            }
+            catch {
+                print("An unexpected error occurred: \(error)")
+            }
         }
     }
 }

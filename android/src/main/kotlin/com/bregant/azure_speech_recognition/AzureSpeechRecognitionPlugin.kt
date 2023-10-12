@@ -70,17 +70,20 @@ class AzureSpeechRecognitionPlugin : FlutterPlugin, Activity(), MethodCallHandle
         val granularityString: String = call.argument("granularity") ?: "phoneme"
         val enableMiscue: Boolean = call.argument("enableMiscue") ?: false
         val granularity: PronunciationAssessmentGranularity
-        if (granularityString == "text") {
-            granularity = PronunciationAssessmentGranularity.FullText
-        } else if (granularityString == "word") {
-            granularity = PronunciationAssessmentGranularity.Word
-        } else {
-            granularity = PronunciationAssessmentGranularity.Phoneme
+        when (granularityString) {
+            "text" -> {
+                granularity = PronunciationAssessmentGranularity.FullText
+            }
+            "word" -> {
+                granularity = PronunciationAssessmentGranularity.Word
+            }
+            else -> {
+                granularity = PronunciationAssessmentGranularity.Phoneme
+            }
         }
         when (call.method) {
             "simpleVoice" -> {
                 simpleSpeechRecognition(speechSubscriptionKey, serviceRegion, lang, timeoutMs)
-                result.success(true)
             }
 
             "simpleVoiceWithAssessment" -> {
@@ -94,12 +97,14 @@ class AzureSpeechRecognitionPlugin : FlutterPlugin, Activity(), MethodCallHandle
                     lang,
                     timeoutMs
                 )
-                result.success(true)
+            }
+
+            "isContinuousRecognitionOn" -> {
+                result.success(continuousListeningStarted)
             }
 
             "continuousStream" -> {
                 micStreamContinuously(speechSubscriptionKey, serviceRegion, lang)
-                result.success(true)
             }
 
             "continuousStreamWithAssessment" -> {
@@ -112,11 +117,6 @@ class AzureSpeechRecognitionPlugin : FlutterPlugin, Activity(), MethodCallHandle
                     serviceRegion,
                     lang,
                 )
-                result.success(true)
-            }
-
-            "cancelActiveSimpleRecognitionTasks" -> {
-                // ignore
             }
 
             else -> {
