@@ -108,11 +108,8 @@ class AzureSpeechRecognition {
   void setRecognitionStoppedHandler(VoidCallback handler) =>
       recognitionStoppedHandler = handler;
 
-      
-
-  /// Simple voice Recognition, the result will be sent only at the end.
-  /// Return the text obtained or the error catched
-  static simpleVoiceRecognition() {
+  // Performs speech recognition until a silence is detected
+  static void simpleVoiceRecognition() {
     if ((_subKey != null && _region != null)) {
       _channel.invokeMethod('simpleVoice', {
         'language': _lang,
@@ -125,24 +122,33 @@ class AzureSpeechRecognition {
     }
   }
 
-  static simpleVoiceRecognitionWithAssessment({String? referenceText, String? phonemeAlphabet, String? granularity, bool? enableMiscue}) {
+  /// Performs speech recognition until a silence is detected (with speech assessment)
+  static void simpleVoiceRecognitionWithAssessment(
+      {String? referenceText,
+      String? phonemeAlphabet,
+      String? granularity,
+      bool? enableMiscue}) {
     if ((_subKey != null && _region != null)) {
       _channel.invokeMethod('simpleVoiceWithAssessment', {
         'language': _lang,
         'subscriptionKey': _subKey,
         'region': _region,
         'timeout': _timeout,
-        'granularity' : granularity,
-        'enableMiscue' : enableMiscue,
-        'referenceText' : referenceText,
-        'phonemeAlphabet' : phonemeAlphabet,
+        'granularity': granularity,
+        'enableMiscue': enableMiscue,
+        'referenceText': referenceText,
+        'phonemeAlphabet': phonemeAlphabet,
       });
     } else {
       throw "Error: SpeechRecognitionParameters not initialized correctly";
     }
   }
 
-  static continuousRecording() {
+  
+  /// When called for the first time, starts performing continuous recognition
+  /// When called a second time, it stops the previously started recognition
+  /// It essentially toggles between "recording" and "not recording" states
+  static void continuousRecording() {
     if (_subKey != null && _region != null) {
       _channel.invokeMethod('continuousStream',
           {'language': _lang, 'subscriptionKey': _subKey, 'region': _region});
@@ -151,19 +157,32 @@ class AzureSpeechRecognition {
     }
   }
 
-  static continuousRecordingWithAssessment({String? referenceText, String? phonemeAlphabet, String? granularity, bool? enableMiscue}) {
+  /// When called for the first time, starts performing continuous recognition (with speech assessment)
+  /// When called a second time, it stops the previously started recognition (with speech assessment)
+  /// It essentially toggles between "recording" and "not recording" states
+  static void continuousRecordingWithAssessment(
+      {String? referenceText,
+      String? phonemeAlphabet,
+      String? granularity,
+      bool? enableMiscue}) {
     if ((_subKey != null && _region != null)) {
       _channel.invokeMethod('continuousStreamWithAssessment', {
         'language': _lang,
         'subscriptionKey': _subKey,
         'region': _region,
-        'granularity' : granularity,
-        'enableMiscue' : enableMiscue,
-        'referenceText' : referenceText,
-        'phonemeAlphabet' : phonemeAlphabet,
+        'granularity': granularity,
+        'enableMiscue': enableMiscue,
+        'referenceText': referenceText,
+        'phonemeAlphabet': phonemeAlphabet,
       });
     } else {
       throw "Error: SpeechRecognitionParameters not initialized correctly";
     }
+  }
+
+
+  /// When continuously recording, returns true, otherwise it returns false
+  static Future<bool> isContinuousRecognitionOn() {
+    return _channel.invokeMethod<bool>('isContinuousRecognitionOn').then<bool>((bool? value) => value ?? false);
   }
 }
