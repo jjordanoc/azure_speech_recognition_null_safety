@@ -1,3 +1,4 @@
+import 'package:azure_speech_recognition_null_safety_example/screens/continuous_recognition_screen.dart';
 import 'package:azure_speech_recognition_null_safety_example/screens/simple_recognition_screen.dart';
 import 'package:azure_speech_recognition_null_safety_example/screens/home_screen.dart';
 import 'package:flutter/material.dart';
@@ -37,6 +38,7 @@ class _MyAppState extends State<MyApp> {
       routes: {
         '/': (context) => HomeScreen(),
         '/simple': (context) => SimpleRecognitionScreen(),
+        '/continuous': (context) => ContinuousRecognitionScreen(),
       },
     );
   }
