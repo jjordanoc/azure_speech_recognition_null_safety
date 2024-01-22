@@ -1,3 +1,6 @@
+## 0.9.4
+- Feat: Added NBestPhoneme count parameter to improve assessments.
+
 ## 0.9.3
 - Feat: Added speech assessment feature for continuous recognition.
 
