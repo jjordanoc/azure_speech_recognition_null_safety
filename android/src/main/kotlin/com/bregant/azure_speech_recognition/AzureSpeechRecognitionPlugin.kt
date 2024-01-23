@@ -69,6 +69,7 @@ class AzureSpeechRecognitionPlugin : FlutterPlugin, Activity(), MethodCallHandle
         val phonemeAlphabet: String = call.argument("phonemeAlphabet") ?: "IPA"
         val granularityString: String = call.argument("granularity") ?: "phoneme"
         val enableMiscue: Boolean = call.argument("enableMiscue") ?: false
+        val nBestPhonemeCount: Int? = call.argument("nBestPhonemeCount") ?: null
         val granularity: PronunciationAssessmentGranularity
         when (granularityString) {
             "text" -> {
@@ -95,7 +96,8 @@ class AzureSpeechRecognitionPlugin : FlutterPlugin, Activity(), MethodCallHandle
                     speechSubscriptionKey,
                     serviceRegion,
                     lang,
-                    timeoutMs
+                    timeoutMs,
+                    nBestPhonemeCount,
                 )
             }
 
@@ -116,6 +118,7 @@ class AzureSpeechRecognitionPlugin : FlutterPlugin, Activity(), MethodCallHandle
                     speechSubscriptionKey,
                     serviceRegion,
                     lang,
+                    nBestPhonemeCount,
                 )
             }
 
@@ -188,7 +191,8 @@ class AzureSpeechRecognitionPlugin : FlutterPlugin, Activity(), MethodCallHandle
         speechSubscriptionKey: String,
         serviceRegion: String,
         lang: String,
-        timeoutMs: String
+        timeoutMs: String,
+        nBestPhonemeCount: Int?,
     ) {
         val logTag: String = "simpleVoiceWithAssessment"
 
@@ -211,6 +215,10 @@ class AzureSpeechRecognitionPlugin : FlutterPlugin, Activity(), MethodCallHandle
                     enableMiscue
                 )
             pronunciationAssessmentConfig.setPhonemeAlphabet(phonemeAlphabet)
+
+            if (nBestPhonemeCount != null) {
+                pronunciationAssessmentConfig.setNBestPhonemeCount(nBestPhonemeCount)
+            }
 
             Log.i(logTag, pronunciationAssessmentConfig.toJson())
 
@@ -321,6 +329,7 @@ class AzureSpeechRecognitionPlugin : FlutterPlugin, Activity(), MethodCallHandle
         speechSubscriptionKey: String,
         serviceRegion: String,
         lang: String,
+        nBestPhonemeCount: Int?,
     ) {
         val logTag: String = "micStreamContinuousWithAssessment"
 
@@ -354,6 +363,10 @@ class AzureSpeechRecognitionPlugin : FlutterPlugin, Activity(), MethodCallHandle
                     enableMiscue
                 )
             pronunciationAssessmentConfig.setPhonemeAlphabet(phonemeAlphabet)
+
+            if (nBestPhonemeCount != null) {
+                pronunciationAssessmentConfig.setNBestPhonemeCount(nBestPhonemeCount)
+            }
 
             Log.i(logTag, pronunciationAssessmentConfig.toJson())
 
