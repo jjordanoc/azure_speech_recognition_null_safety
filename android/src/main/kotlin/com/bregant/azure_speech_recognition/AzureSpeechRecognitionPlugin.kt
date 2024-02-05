@@ -75,9 +75,11 @@ class AzureSpeechRecognitionPlugin : FlutterPlugin, Activity(), MethodCallHandle
             "text" -> {
                 granularity = PronunciationAssessmentGranularity.FullText
             }
+
             "word" -> {
                 granularity = PronunciationAssessmentGranularity.Word
             }
+
             else -> {
                 granularity = PronunciationAssessmentGranularity.Phoneme
             }
@@ -85,6 +87,7 @@ class AzureSpeechRecognitionPlugin : FlutterPlugin, Activity(), MethodCallHandle
         when (call.method) {
             "simpleVoice" -> {
                 simpleSpeechRecognition(speechSubscriptionKey, serviceRegion, lang, timeoutMs)
+                result.success(true)
             }
 
             "simpleVoiceWithAssessment" -> {
@@ -99,6 +102,7 @@ class AzureSpeechRecognitionPlugin : FlutterPlugin, Activity(), MethodCallHandle
                     timeoutMs,
                     nBestPhonemeCount,
                 )
+                result.success(true)
             }
 
             "isContinuousRecognitionOn" -> {
@@ -107,6 +111,7 @@ class AzureSpeechRecognitionPlugin : FlutterPlugin, Activity(), MethodCallHandle
 
             "continuousStream" -> {
                 micStreamContinuously(speechSubscriptionKey, serviceRegion, lang)
+                result.success(true)
             }
 
             "continuousStreamWithAssessment" -> {
@@ -120,6 +125,11 @@ class AzureSpeechRecognitionPlugin : FlutterPlugin, Activity(), MethodCallHandle
                     lang,
                     nBestPhonemeCount,
                 )
+                result.success(true)
+            }
+
+            "stopContinuousStream" -> {
+                stopContinuousMicStream(result)
             }
 
             else -> {
@@ -318,6 +328,25 @@ class AzureSpeechRecognitionPlugin : FlutterPlugin, Activity(), MethodCallHandle
         } catch (exec: Exception) {
             assert(false)
             invokeMethod("speech.onException", "Exception: " + exec.message)
+        }
+    }
+
+    private fun stopContinuousMicStream(flutterResult: Result) {
+        val logTag: String = "stopContinuousMicStream"
+
+        Log.i(logTag, "Continuous recognition started: $continuousListeningStarted")
+
+        if (continuousListeningStarted) {
+            val _task1 = reco.stopContinuousRecognitionAsync()
+
+            setOnTaskCompletedListener(_task1) { result ->
+                Log.i(logTag, "Continuous recognition stopped.")
+                continuousListeningStarted = false
+                invokeMethod("speech.onRecognitionStopped", null)
+                reco.close()
+                flutterResult.success(true)
+            }
+            return
         }
     }
 

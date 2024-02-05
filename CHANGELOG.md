@@ -1,3 +1,6 @@
+## 0.9.5
+- Feat: Added method to stop continuous recognition independently.
+
 ## 0.9.4
 - Feat: Added NBestPhoneme count parameter to improve assessments.
 

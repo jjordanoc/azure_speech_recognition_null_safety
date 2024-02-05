@@ -49,10 +49,12 @@ public class SwiftAzureSpeechRecognitionPlugin: NSObject, FlutterPlugin {
         if (call.method == "simpleVoice") {
             print("Called simpleVoice")
             simpleSpeechRecognition(speechSubscriptionKey: speechSubscriptionKey, serviceRegion: serviceRegion, lang: lang, timeoutMs: timeoutMs)
+            result(true)
         }
         else if (call.method == "simpleVoiceWithAssessment") {
             print("Called simpleVoiceWithAssessment")
             simpleSpeechRecognitionWithAssessment(referenceText: referenceText, phonemeAlphabet: phonemeAlphabet,  granularity: granularity, enableMiscue: enableMiscue, speechSubscriptionKey: speechSubscriptionKey, serviceRegion: serviceRegion, lang: lang, timeoutMs: timeoutMs, nBestPhonemeCount: nBestPhonemeCount)
+            result(true)
         }
         else if (call.method == "isContinuousRecognitionOn") {
             print("Called isContinuousRecognitionOn: \(continousListeningStarted)")
@@ -61,15 +63,22 @@ public class SwiftAzureSpeechRecognitionPlugin: NSObject, FlutterPlugin {
         else if (call.method == "continuousStream") {
             print("Called continuousStream")
             continuousStream(speechSubscriptionKey: speechSubscriptionKey, serviceRegion: serviceRegion, lang: lang)
+            result(true)
         }
         else if (call.method == "continuousStreamWithAssessment") {
             print("Called continuousStreamWithAssessment")
             continuousStreamWithAssessment(referenceText: referenceText, phonemeAlphabet: phonemeAlphabet,  granularity: granularity, enableMiscue: enableMiscue, speechSubscriptionKey: speechSubscriptionKey, serviceRegion: serviceRegion, lang: lang, nBestPhonemeCount: nBestPhonemeCount)
+            result(true)
+        }
+        else if (call.method == "stopContinuousStream") {
+            stopContinuousStream(flutterResult: result)
         }
         else {
             result(FlutterMethodNotImplemented)
         }
     }
+    
+    
     
     private func cancelActiveSimpleRecognitionTasks() {
         print("Cancelling any active tasks")
@@ -207,6 +216,22 @@ public class SwiftAzureSpeechRecognitionPlugin: NSObject, FlutterPlugin {
             self.simpleRecognitionTasks.removeValue(forKey: taskId)
         }
         simpleRecognitionTasks[taskId] = SimpleRecognitionTask(task: task, isCanceled: false)
+    }
+    
+    private func stopContinuousStream(flutterResult: FlutterResult) {
+        if (continousListeningStarted) {
+            print("Stopping continous recognition")
+            do {
+                try continousSpeechRecognizer!.stopContinuousRecognition()
+                self.azureChannel.invokeMethod("speech.onRecognitionStopped", arguments: nil)
+                continousSpeechRecognizer = nil
+                continousListeningStarted = false
+                flutterResult(true)
+            }
+            catch {
+                print("Error occurred stopping continous recognition")
+            }
+        }
     }
     
     private func continuousStream(speechSubscriptionKey : String, serviceRegion : String, lang: String) {

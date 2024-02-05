@@ -186,4 +186,8 @@ class AzureSpeechRecognition {
     return _channel.invokeMethod<bool>('isContinuousRecognitionOn').then<bool>((
         bool? value) => value ?? false);
   }
+
+  static Future<void> stopContinuousRecognition() async {
+    await _channel.invokeMethod('stopContinuousStream');
+  }
 }
