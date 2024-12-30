@@ -14,7 +14,7 @@ class _SimpleRecognitionScreenState extends State<SimpleRecognitionScreen>
   String _centerText = 'Unknown';
   late AzureSpeechRecognition _speechAzure;
   String subKey = dotenv.get("AZURE_KEY");
-  String region = "eastus";
+  String region = dotenv.get('AZURE_REGION');
   String lang = "en-US";
   String timeout = "2000";
   bool isRecording = false;

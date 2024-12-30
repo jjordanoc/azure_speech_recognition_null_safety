@@ -1,4 +1,4 @@
-package com.bregant.azure_speech_recognition_example
+package com.jjordanoc.azure_speech_recognition_null_safety_example
 
 import androidx.annotation.NonNull;
 import io.flutter.embedding.android.FlutterActivity
