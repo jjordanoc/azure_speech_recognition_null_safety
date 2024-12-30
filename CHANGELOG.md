@@ -1,3 +1,6 @@
+## 0.9.6
+- Fix: Update gradle for compatibility with Android Studio Ladybug 2024.2.1.
+
 ## 0.9.5
 - Feat: Added method to stop continuous recognition independently.
 
@@ -21,7 +24,8 @@
 
 ## 0.8.7
 - Feat: Partial results are now transmitted through calls to the appropriate handlers.
-- Refactor: Removed poorly documented methods. __Important__: If your application depends on any of these methods consider staying on version 0.8.6.
+- Refactor: Removed poorly documented methods.
+- __Important__: If your application depends on any of these methods consider staying on version 0.8.6.
 
 ## 0.8.6
 - Feat: Added continuous speech recognition in iOS.
